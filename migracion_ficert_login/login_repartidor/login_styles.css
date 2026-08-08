@@ -1,0 +1,78 @@
+/* ================================================================= */
+/* ESTILOS CSS: INICIO DE SESIÓN DE REPARTIDORES                       */
+/* ================================================================= */
+
+#pantallaLogin {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #140D08;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    box-sizing: border-box;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+#pantallaLogin input[type="email"],
+#pantallaLogin input[type="password"] {
+    width: 100%;
+    padding: 12px 12px 12px 42px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(139, 90, 43, 0.3);
+    background: #18100A;
+    color: #fff;
+    font-size: 13.5px;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+#pantallaLogin input[type="email"]:focus,
+#pantallaLogin input[type="password"]:focus {
+    border-color: #FF7300;
+    box-shadow: 0 0 10px rgba(255, 115, 0, 0.1);
+}
+
+#btnSumitLogin {
+    background: #8B5A2B;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    color: #140D08;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#btnSumitLogin:hover {
+    background: #a36932;
+}
+
+#btnSumitLogin:active {
+    transform: scale(0.98);
+}
+
+#cajaSesionRepartidor {
+    display: flex;
+    background: #23170E;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(139, 90, 43, 0.3);
+    margin-bottom: 15px;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}

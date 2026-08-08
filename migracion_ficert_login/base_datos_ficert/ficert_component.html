@@ -1,0 +1,191 @@
+<!-- ================================================================= -->
+<!-- COMPONENTE HTML: BASE DE DATOS FICERT (BOTÓN NARANJA)              -->
+<!-- ================================================================= -->
+
+<!-- Botón Disparador en Menú Hamburguesa / Barra Principal -->
+<button class="btn-cargar-ficert" onclick="togglePanelFicert()">
+    <i class="fas fa-database"></i> B.D. Ficert
+</button>
+
+<!-- Contenedor Principal de la Base de Datos Ficert -->
+<div class="contenedor-lista" id="panelFicert" style="display: none; width: 900px; max-width: 95%;">
+    <div class="contenedor-titulo-panel" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <h3 style="display: flex; align-items: center; gap: 8px; font-size: 18px; margin: 0; color: #ef6c00;">
+            <i class="fas fa-database"></i> B.D. Ficert
+            <span class="ficert-totales-badge" id="ficertCantRegs" style="display: none;">0 filas</span>
+        </h3>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button onclick="toggleAnchoFicert()" title="Expandir o Reducir ancho" style="background: rgba(239, 108, 0, 0.1); border: 1px solid #ef6c00; color: #ef6c00; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                <i class="fas fa-expand-alt" id="ficertIconoExpand"></i> <span id="ficertTextoExpand">Reducir</span>
+            </button>
+            <button class="btn-cerrar" onclick="cerrarVentanaFicert()" style="background: rgba(0,0,0,0.1); border: none; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px;">X</button>
+        </div>
+    </div>
+    
+    <!-- Info del proyecto -->
+    <div style="font-size: 11px; margin-bottom: 12px; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; line-height: 1.4; border-left: 3px solid #ef6c00;" class="ficert-info-badge">
+        <strong>Base de datos:</strong> <span style="font-family: monospace; word-break: break-all;">Firestore Database (Realtime)</span><br>
+        <strong>Estado:</strong> <span id="ficert-estado-conexion" style="color: #f39c12; font-weight: bold;"><i class="fas fa-spinner fa-spin"></i> Inicializando...</span>
+    </div>
+
+    <!-- Buscador de Colección y Filtro rápido -->
+    <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label style="font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; color: inherit;">Buscar / Filtrar en tabla:</label>
+            <input type="text" id="ficertBuscadorId" oninput="filtrarDocumentosFicert(this.value)" placeholder="Escribe para buscar en filas..." style="width: 100%; padding: 7px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; outline: none; background: #ffffff; color: #333;">
+        </div>
+        <div style="width: 180px;">
+            <label style="font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; color: inherit;">Otras Colecciones:</label>
+            <select id="ficertSelectorColeccion" onchange="seleccionarColeccionFicert(this.value)" style="width: 100%; padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #ffffff; color: #333;">
+                <option value="CAPTURA">CAPTURA</option>
+                <option value="COMISIONES">COMISIONES</option>
+                <option value="Pedidos">Pedidos</option>
+                <option value="REPARTIDORES">REPARTIDORES</option>
+                <option value="REP_DIA">REP_DIA</option>
+                <option value="RUTA">RUTA</option>
+                <option value="Tarifas">Tarifas</option>
+                <option value="USUARIOS">USUARIOS</option>
+                <option value="Usuarios_Seguridad">Usuarios_Seguridad</option>
+                <option value="custom">-- Colección Personalizada --</option>
+            </select>
+            <input type="text" id="ficertColeccionCustom" placeholder="Nombre..." style="display: none; width: 100%; margin-top: 4px; padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; box-sizing: border-box; outline: none;">
+        </div>
+        <div style="display: flex; gap: 4px; align-items: flex-end; align-self: flex-end;">
+            <button onclick="cargarDocumentosFicert()" title="Recargar Colección actual" style="background: #ef6c00; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <i class="fas fa-sync-alt"></i> Cargar datos
+            </button>
+            <button onclick="abrirModalCrearFicert()" title="Añadir nuevo registro" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <i class="fas fa-plus"></i> Añadir fila
+            </button>
+        </div>
+    </div>
+
+    <!-- Formulario para agregar/editar documento -->
+    <div id="ficertFormCrear" style="display: none; border: 1.5px solid rgba(139, 90, 43, 0.4); border-radius: 12px; padding: 22px; margin-bottom: 20px; background: #23170E; box-shadow: 0 12px 36px rgba(0,0,0,0.6); box-sizing: border-box; font-family: 'JetBrains Mono', monospace;">
+        <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #FF7300; display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid rgba(139, 90, 43, 0.2); padding-bottom: 8px;">
+            <span><i class="fas fa-edit"></i> Captura / Edición de Registro (Ficert)</span>
+            <button onclick="cerrarFormCrearFicert()" style="background: none; border: none; color: #8B5A2B; cursor: pointer; font-size: 20px; font-weight: bold; padding: 4px;">&times;</button>
+        </h4>
+        
+        <div class="grid-formulario-captura">
+            <div>
+                <label class="form-visual-label">ID del Documento (Clave):</label>
+                <input type="text" id="ficertFormId" placeholder="AUTO-GENERAR (DEJAR VACÍO)..." class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Número de Guía (NGUIA) *:</label>
+                <input type="text" id="ficertFormNguia" placeholder="E.G. 10024" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label" style="color: #8B5A2B;">Nombre de Quien Recibe *:</label>
+                <input type="text" id="ficertFormRecibeNombre" placeholder="E.G. JUAN" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label" style="color: #8B5A2B;">Apellido de Quien Recibe *:</label>
+                <input type="text" id="ficertFormRecibeApellido" placeholder="E.G. PÉREZ" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Dirección Completa *:</label>
+                <input type="text" id="ficertFormDireccion" placeholder="CALLE, NÚMERO, COLONIA" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Número de Ruta (RUTA) *:</label>
+                <input type="text" id="ficertFormRuta" placeholder="E.G. 1" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Monto a Cobrar (ACOBRAR) *:</label>
+                <input type="number" id="ficertFormAcobrar" placeholder="E.G. 150.00" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Contenido del Paquete *:</label>
+                <input type="text" id="ficertFormContenido" placeholder="DESCRIPCIÓN DEL ARTÍCULO" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Quién Envía (ENVIA) *:</label>
+                <input type="text" id="ficertFormEnvia" placeholder="NOMBRE DEL REMITENTE" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Teléfono / Whatsapp *:</label>
+                <input type="tel" id="ficertFormTelefono" placeholder="10 DÍGITOS SIN ESPACIOS" class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Referencias de Envío:</label>
+                <input type="text" id="ficertFormReferencia" placeholder="ENTRE CALLES, FACHADA, ETC." class="form-visual-input">
+            </div>
+            <div>
+                <label class="form-visual-label">Ubicación GPS (RUTA1 - Opcional):</label>
+                <input type="text" id="ficertFormRuta1" placeholder="LATITUD, LONGITUD" class="form-visual-input">
+            </div>
+        </div>
+
+        <!-- Editor JSON avanzado -->
+        <details style="margin: 15px 0 5px 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; cursor: pointer; color: rgba(255,255,255,0.4);">
+            <summary style="outline: none;">Ver editor JSON avanzado (Para otras tablas no transaccionales)</summary>
+            <div style="margin-top: 10px;">
+                <label class="form-visual-label">Campos en Formato JSON:</label>
+                <textarea id="ficertNuevoDocJSON" style="width: 100%; height: 110px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 8px; border-radius: 8px; border: 1.5px solid rgba(139, 90, 43, 0.3); background: #18100A; color: #34d399; box-sizing: border-box; outline: none; margin-top: 4px;" placeholder='{&#10;  "campo": "valor"&#10;}'></textarea>
+            </div>
+        </details>
+
+        <div style="display: flex; gap: 12px; margin-top: 18px;">
+            <button onclick="guardarNuevoDocFicert()" style="flex: 1; background: #8B5A2B; border: none; padding: 12px 24px; border-radius: 8px; color: #140D08; font-size: 13.5px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
+                <i class="fas fa-save"></i> Guardar Fila
+            </button>
+            <button onclick="cerrarFormCrearFicert()" style="background: #18100A; border: 1.5px solid rgba(139, 90, 43, 0.3); padding: 12px 24px; border-radius: 8px; color: #ffffff; font-size: 13.5px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- Barra de Fórmulas "fx" estilo Excel Interactiva -->
+    <div style="display: flex; align-items: center; background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; font-family: monospace; font-size: 11px; gap: 8px; flex-wrap: nowrap;" id="ficertFxBar">
+        <div style="background: #ffffff; border: 1px solid #ccc; padding: 4px 8px; border-radius: 3px; font-weight: bold; min-width: 160px; max-width: 200px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; text-align: left; color: #333;" id="ficertFxCellRef">
+            (Ninguna celda)
+        </div>
+        <div style="display: flex; gap: 2px;">
+            <button onclick="cancelarEdicionCeldaExcel()" title="Cancelar cambios en fórmula" style="background: #ffffff; border: 1px solid #ccc; color: #dc3545; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; width: 24px; display: flex; align-items: center; justify-content: center; height: 24px;">X</button>
+            <button onclick="guardarEdicionCeldaExcel()" title="Aprobar cambio en base de datos (Enter)" style="background: #ffffff; border: 1px solid #ccc; color: #28a745; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; width: 24px; display: flex; align-items: center; justify-content: center; height: 24px;">✓</button>
+        </div>
+        <span style="color: #ef6c00; font-weight: bold; padding: 0 4px; font-size: 12px; font-style: italic; font-family: sans-serif;">fx</span>
+        <input type="text" id="ficertFxValueInput" onkeydown="detectarEnterEdicionCelda(event)" placeholder="Selecciona una celda para ver o editar su contenido..." style="flex: 1; padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; font-family: monospace; font-size: 11px; outline: none; background: #ffffff; color: #333;">
+    </div>
+
+    <!-- Visor Principal (Tabla tipo Excel) -->
+    <div id="ficertDocsContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 0; background: #fafafa; min-height: 200px; width: 100%;">
+        <div style="text-align: center; color: #777; padding: 40px 10px; font-size: 13px; line-height: 1.4;">
+            <i class="fas fa-cloud-download-alt" style="font-size: 28px; color: #ef6c00; margin-bottom: 8px; display: block;"></i>
+            Presiona cualquiera de las pestañas inferiores estilo hoja de cálculo para cargar los datos en tiempo real.
+        </div>
+    </div>
+
+    <!-- Pestañas inferiores de Hojas de Excel -->
+    <div class="ficert-excel-tabs-container">
+        <div class="ficert-excel-tabs" id="ficertExcelTabsRow">
+            <div class="ficert-excel-tab active" onclick="cambiarHojaColeccionFicert('CAPTURA')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> CAPTURA
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('Pedidos')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> Pedidos
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('RUTA')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> RUTA
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('REPARTIDORES')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> REPARTIDORES
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('COMISIONES')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> COMISIONES
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('REP_DIA')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> REP_DIA
+            </div>
+            <div class="ficert-excel-tab" onclick="cambiarHojaColeccionFicert('USUARIOS')">
+                <i class="fas fa-file-excel" style="color: #1f7244;"></i> USUARIOS
+            </div>
+            <button class="ficert-excel-tab-add" onclick="abrirModalCrearFicert()" title="Crear nueva fila">+</button>
+        </div>
+        <div class="ficert-excel-status">
+            <i class="fas fa-check-circle"></i> Ficert Realtime Connected
+        </div>
+    </div>
+</div>

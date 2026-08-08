@@ -1,0 +1,81 @@
+<!-- ================================================================= -->
+<!-- COMPONENTE HTML: INICIO DE SESIÓN Y SESIÓN DE REPARTIDOR          -->
+<!-- ================================================================= -->
+
+<!-- Pantalla Fullscreen de Login de Repartidor -->
+<div id="pantallaLogin" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #140D08; display: flex; align-items: center; justify-content: center; z-index: 999999; box-sizing: border-box; font-family: 'JetBrains Mono', monospace;">
+    <div style="background: rgba(35, 23, 14, 0.95); backdrop-filter: blur(8px); padding: 45px 35px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 20px rgba(255,115,0,0.05); border: 1.5px solid rgba(139, 90, 43, 0.3); text-align: center; color: #ffffff; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Logo / Icono -->
+        <div style="display: flex; justify-content: center; margin-bottom: 5px;">
+            <div style="background: rgba(255, 115, 0, 0.1); width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2.5px solid #FF7300; box-shadow: 0 4px 20px rgba(255, 115, 0, 0.25);">
+                <i class="fas fa-shipping-fast" style="font-size: 38px; color: #FF7300;"></i>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.1em; color: #ffffff; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">FICERT MENSAJERÍA</h2>
+            <p style="margin: 6px 0 0 0; font-size: 11px; color: #8B5A2B; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em;">Acceso de Repartidores</p>
+        </div>
+
+        <!-- Formulario -->
+        <div style="display: flex; flex-direction: column; gap: 18px; text-align: left; margin-top: 5px;">
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; color: #8B5A2B; letter-spacing: 0.1em;">Correo Electrónico:</label>
+                <div style="position: relative;">
+                    <i class="fas fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8B5A2B; font-size: 14px;"></i>
+                    <input type="email" id="loginEmail" placeholder="CONTRATISTA@CORREO.COM" style="width: 100%; padding: 12px 12px 12px 42px; border-radius: 8px; border: 1.5px solid rgba(139, 90, 43, 0.3); background: #18100A; color: #fff; font-size: 13.5px; outline: none; box-sizing: border-box; transition: all 0.25s ease; font-family: 'JetBrains Mono', monospace;" onfocus="this.style.borderColor='#FF7300';" onblur="this.style.borderColor='rgba(139, 90, 43, 0.3)';">
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; color: #8B5A2B; letter-spacing: 0.1em;">Contraseña:</label>
+                <div style="position: relative;">
+                    <i class="fas fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8B5A2B; font-size: 14px;"></i>
+                    <input type="password" id="loginPassword" placeholder="••••••••" style="width: 100%; padding: 12px 38px 12px 42px; border-radius: 8px; border: 1.5px solid rgba(139, 90, 43, 0.3); background: #18100A; color: #fff; font-size: 13.5px; outline: none; box-sizing: border-box; transition: all 0.25s ease; font-family: 'JetBrains Mono', monospace;" onfocus="this.style.borderColor='#FF7300';" onblur="this.style.borderColor='rgba(139, 90, 43, 0.3)';">
+                    <i class="fas fa-eye" id="toggleLoginPasswordBtn" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #8B5A2B; cursor: pointer; font-size: 14px; z-index: 10;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="loginErrorMsg" style="color: #fda4af; font-size: 12px; display: none; text-align: center; margin: 4px 0; background: rgba(244,63,94,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(244,63,94,0.2); font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
+            ⚠️ Correo o contraseña incorrectos.
+        </div>
+
+        <button id="btnSumitLogin" onclick="ejecutarLoginRepartidor()" style="background: #8B5A2B; border: none; padding: 14px; border-radius: 8px; color: #140D08; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;">
+            <span>Ingresar al Sistema</span> <i class="fas fa-sign-in-alt"></i>
+        </button>
+
+        <div style="font-size: 10px; color: rgba(255, 255, 255, 0.4); margin-top: 10px; line-height: 1.5; text-transform: uppercase; letter-spacing: 0.05em;">
+            Ficert Delivery Suite &copy; 2026<br>
+            Tracking de GPS activo en tiempo real
+        </div>
+
+    </div>
+</div>
+
+<!-- Caja de Información de Sesión del Repartidor (Menú Hamburguesa) -->
+<div id="cajaSesionRepartidor" style="display: none; background: #23170E; padding: 12px; border-radius: 8px; border: 1px solid rgba(139, 90, 43, 0.3); margin-bottom: 15px; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace;">
+    <div id="repartidorIniciales" style="background: #FF7300; color: #140D08; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+        R
+    </div>
+    <div style="flex: 1; text-align: left; overflow: hidden;">
+        <div id="repartidorNombre" style="font-weight: bold; font-size: 13px; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            Repartidor
+        </div>
+        <div id="repartidorCorreo" style="font-size: 10px; color: #8B5A2B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            repartidor@correo.com
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+            <span id="repartidorRutaBadge" style="background: rgba(255, 115, 0, 0.15); color: #FF7300; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; border: 1px solid rgba(255, 115, 0, 0.3);">
+                Ruta 1
+            </span>
+            <span id="txtEstadoRepartidor" style="font-size: 10px; color: #ffffff;">
+                <i class="fas fa-circle" id="indicatorEstadoRepartidor" style="color: #2ecc71; font-size: 10px;"></i> Disponible
+            </span>
+        </div>
+    </div>
+    <button onclick="logoutRepartidor()" title="Cerrar Sesión" style="background: transparent; border: none; color: #ef4444; font-size: 16px; cursor: pointer; padding: 6px;">
+        <i class="fas fa-power-off"></i>
+    </button>
+</div>

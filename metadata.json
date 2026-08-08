@@ -1,0 +1,6 @@
+{
+  "name": "Mapa de Rutas",
+  "description": "Sistema integrado de ruteo para conductores sincronizado con Google Sheets.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

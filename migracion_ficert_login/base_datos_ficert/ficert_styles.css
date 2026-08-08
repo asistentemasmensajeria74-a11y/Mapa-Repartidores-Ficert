@@ -1,0 +1,245 @@
+/* ================================================================= */
+/* ESTILOS CSS: BASE DE DATOS FICERT (VISOR TIPO EXCEL)               */
+/* ================================================================= */
+
+.btn-cargar-ficert {
+    background: #ef6c00;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn-cargar-ficert:hover {
+    background: #e65100;
+    transform: translateY(-1px);
+}
+
+.contenedor-lista {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    padding: 16px;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.ficert-totales-badge {
+    background: rgba(239, 108, 0, 0.1);
+    color: #ef6c00;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* Tabla Estilo Hoja de Cálculo Excel */
+.ficert-excel-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    background: #ffffff;
+}
+
+.ficert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: monospace;
+    color: #333333;
+}
+
+.ficert-table th,
+.ficert-table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 250px;
+}
+
+.ficert-table th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: inset 0 -1px 0 #cbd5e1;
+}
+
+.ficert-excel-col-letter {
+    display: block;
+    font-size: 10px;
+    color: #94a3b8;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+}
+
+.ficert-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.ficert-sticky-col {
+    position: sticky;
+    left: 0;
+    background: #ffffff;
+    z-index: 1;
+    box-shadow: 1px 0 0 #e2e8f0;
+}
+
+.ficert-table th.ficert-sticky-col {
+    z-index: 3;
+    background: #f1f5f9;
+}
+
+.ficert-col-type-tag {
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+.ficert-cell-null {
+    color: #cbd5e1;
+    font-style: italic;
+}
+
+.ficert-cell-selected {
+    outline: 2px solid #3b82f6 !important;
+    background-color: #eff6ff !important;
+}
+
+.ficert-td-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.ficert-row-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+
+.ficert-row-btn:hover {
+    background: #f1f5f9;
+}
+
+.ficert-row-btn-edit { color: #ef6c00; }
+.ficert-row-btn-delete { color: #ef4444; }
+
+/* Contenedor de Pestañas estilo Excel */
+.ficert-excel-tabs-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-top: none;
+    padding: 0 6px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.ficert-excel-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    padding-top: 4px;
+}
+
+.ficert-excel-tab {
+    background: #cbd5e1;
+    color: #475569;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.ficert-excel-tab:hover {
+    background: #e2e8f0;
+}
+
+.ficert-excel-tab.active {
+    background: #ffffff;
+    color: #ef6c00;
+    border-top: 2px solid #ef6c00;
+}
+
+.ficert-excel-tab-add {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.ficert-excel-status {
+    font-size: 10px;
+    color: #10b981;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Grid de Formulario de Captura */
+.grid-formulario-captura {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.form-visual-label {
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: #FF7300;
+}
+
+.form-visual-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(139, 90, 43, 0.3);
+    background: #18100A;
+    color: #ffffff;
+    font-size: 12px;
+    outline: none;
+    box-sizing: border-box;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.form-visual-input:focus {
+    border-color: #FF7300;
+}
