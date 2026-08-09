@@ -16,7 +16,7 @@ function getFirestoreDbAsync() {
         const firebaseConfig = {
             apiKey: window.VITE_FIREBASE_API_KEY || "",
             authDomain: window.VITE_FIREBASE_AUTH_DOMAIN || "",
-            projectId: window.VITE_FIREBASE_PROJECT_ID || "",
+            projectId: window.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0926013041",
             storageBucket: window.VITE_FIREBASE_STORAGE_BUCKET || "",
             messagingSenderId: window.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
             appId: window.VITE_FIREBASE_APP_ID || ""
