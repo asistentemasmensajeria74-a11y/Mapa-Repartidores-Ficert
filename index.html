@@ -5,6 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Rutas</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#f77b0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mapa de Rutas">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('✅ Service Worker registrado con éxito:', reg.scope))
+                    .catch(err => console.warn('⚠️ Error al registrar Service Worker:', err));
+            });
+        }
+    </script>
+
     <!-- Estilos CSS -->
     <style>
         * {
@@ -879,10 +899,10 @@
     // Configuración segura usando variables de entorno de Vite (.env)
     const firebaseConfig = {
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-        authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0926013041"}.firebaseapp.com`,
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0926013041",
-        storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0926013041"}.firebasestorage.app`,
-        messagingSenderId: "364586590171",
+        authDomain: import.meta.env.VITE_FIREBASE_PROJECT_ID ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com` : undefined,
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: import.meta.env.VITE_FIREBASE_PROJECT_ID ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app` : undefined,
+        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "364586590171",
         appId: import.meta.env.VITE_FIREBASE_APP_ID
     };
 
@@ -2116,6 +2136,11 @@
     function initMap() {
         // ✅ Inicializar Firebase Ficert inmediatamente para poder cargar datos de Firestore
         initFicertFirebase();
+
+        if (typeof google === 'undefined' || !google.maps) {
+            console.warn("⚠️ Google Maps API aún no está disponible o no se ha cargado.");
+            return;
+        }
 
         // ✅ 1. Cargar coordenadas y zoom previos guardados del mapa para restaurar pantalla
         const savedLat = parseFloat(localStorage.getItem('estado_map_center_lat'));
@@ -4972,6 +4997,7 @@
         }
     }
 
+    window.initMap = initMap;
     window.onload = initMap;
 </script>
 </body>
