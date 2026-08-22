@@ -891,10 +891,10 @@
 <!-- Cargar SDK de Firebase Modular v9/v10 de forma segura y moderna -->
 <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, enableIndexedDbPersistence, GeoPoint } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, onSnapshot, enableIndexedDbPersistence, GeoPoint } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Registrar en window las APIs funcionales de Firestore
-    window.firebaseFirestore = { collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, enableIndexedDbPersistence, GeoPoint, getFirestore };
+    window.firebaseFirestore = { collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, onSnapshot, enableIndexedDbPersistence, GeoPoint, getFirestore };
 
     // Configuración segura usando variables de entorno de Vite (.env)
     const firebaseConfig = {
@@ -1522,7 +1522,12 @@
                 selector.style.opacity = "0.7";
             }
             sincronizarSwitchDisponibilidad();
+            iniciarListenerEstadoRepartidor();
         } else {
+            if (unsubscribeEstadoRepartidor) {
+                unsubscribeEstadoRepartidor();
+                unsubscribeEstadoRepartidor = null;
+            }
             if (caja) caja.style.display = "none";
             if (selector) {
                 selector.disabled = false;
@@ -1775,8 +1780,76 @@
         return false;
     }
 
+    let unsubscribeEstadoRepartidor = null;
+
+    function formatearEstadoRepartidorUI(estadoRaw) {
+        const estadoUpper = String(estadoRaw || 'DISPONIBLE').trim().toUpperCase();
+        let texto = 'Disponible';
+        let color = '#2ecc71'; // Verde
+        let isChecked = true;
+
+        if (estadoUpper === 'DISPONIBLE') {
+            texto = 'Disponible';
+            color = '#2ecc71'; // Verde
+            isChecked = true;
+        } else if (estadoUpper === 'INACTIVO') {
+            texto = 'Inactivo';
+            color = '#e74c3c'; // Rojo
+            isChecked = false;
+        } else if (estadoUpper === 'CON ENVIO' || estadoUpper === 'CON_ENVIO') {
+            texto = 'Con Envío';
+            color = '#f39c12'; // Naranja
+            isChecked = true;
+        } else if (estadoUpper === 'EN RUTA' || estadoUpper === 'EN_RUTA') {
+            texto = 'En Ruta';
+            color = '#3498db'; // Azul
+            isChecked = true;
+        } else if (estadoUpper === 'EN RECOLECCION' || estadoUpper === 'EN_RECOLECCION') {
+            texto = 'En Recolección';
+            color = '#9b59b6'; // Púrpura
+            isChecked = true;
+        } else if (estadoUpper === 'VISITADO') {
+            texto = 'Visitado';
+            color = '#1abc9c'; // Turquesa
+            isChecked = true;
+        } else if (estadoUpper === 'ACEPTADO') {
+            texto = 'Aceptado';
+            color = '#e67e22'; // Naranja
+            isChecked = true;
+        } else {
+            // Formatear cualquier otro valor arbitrario proveniente de Firestore
+            texto = estadoRaw ? String(estadoRaw).split(/[\s_]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Disponible';
+            color = '#f39c12';
+            isChecked = true;
+        }
+
+        return { estadoUpper, texto, color, isChecked };
+    }
+
+    function aplicarEstadoRepartidorEnUI(estadoRaw) {
+        const { estadoUpper, texto, color, isChecked } = formatearEstadoRepartidorUI(estadoRaw);
+        
+        const chk = document.getElementById('chkEstadoRepartidor');
+        const indicator = document.getElementById('indicatorEstadoRepartidor');
+        const txt = document.getElementById('txtEstadoRepartidor');
+        
+        if (chk) {
+            chk.checked = isChecked;
+        }
+        if (indicator) {
+            indicator.style.color = color;
+        }
+        if (txt) {
+            txt.innerHTML = `<i class="fas fa-circle" id="indicatorEstadoRepartidor" style="color: ${color}; font-size: 10px;"></i> ${texto}`;
+        }
+
+        if (repartidorLogueado) {
+            repartidorLogueado.REPA_ESTADO = estadoUpper;
+        }
+    }
+
     async function sincronizarSwitchDisponibilidad() {
-        if (!repartidorLogueado) return;
+        if (!repartidorLogueado || !repartidorLogueado.id) return;
         try {
             const db = await getFirestoreDbAsync();
             if (!db) return;
@@ -1784,82 +1857,96 @@
             const docSnap = await window.firebaseFirestore.getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                const estado = String(data.REPA_ESTADO || 'DISPONIBLE').toUpperCase().trim();
-                
-                const chk = document.getElementById('chkEstadoRepartidor');
-                const indicator = document.getElementById('indicatorEstadoRepartidor');
-                const txt = document.getElementById('txtEstadoRepartidor');
-                
-                if (chk) {
-                    chk.checked = (estado === 'DISPONIBLE');
-                }
-                if (indicator) {
-                    indicator.style.color = (estado === 'DISPONIBLE') ? '#2ecc71' : '#e74c3c';
-                }
-                if (txt) {
-                    txt.innerHTML = `<i class="fas fa-circle" id="indicatorEstadoRepartidor" style="color: ${(estado === 'DISPONIBLE') ? '#2ecc71' : '#e74c3c'}; font-size: 10px;"></i> ${estado === 'DISPONIBLE' ? 'Disponible' : 'Inactivo'}`;
-                }
+                const estado = data.REPA_ESTADO || 'DISPONIBLE';
+                aplicarEstadoRepartidorEnUI(estado);
             }
         } catch (error) {
-            console.warn("Nota: No se pudo sincronizar el switch de disponibilidad en este momento (esperable si el cliente está offline):", error);
+            console.warn("Nota: No se pudo sincronizar el estado del repartidor en este momento:", error);
         }
     }
 
-    async function toggleDisponibilidadRepartidor(isChecked) {
-        if (!repartidorLogueado) return;
-        
-        const chk = document.getElementById('chkEstadoRepartidor');
-        const indicator = document.getElementById('indicatorEstadoRepartidor');
-        const txt = document.getElementById('txtEstadoRepartidor');
-        
-        // Si intenta ponerse inactivo (isChecked === false)
-        if (!isChecked) {
-            // Mostrar estado de carga en el label mientras se verifica
-            if (txt) {
-                txt.innerHTML = `<i class="fas fa-spinner fa-spin" style="font-size: 10px;"></i> Verificando envíos...`;
-            }
-            
-            const idRepa = await obtenerIdRepaLogueadoFirestore();
-            if (!idRepa) {
-                alert("⚠️ Error: No se pudo obtener tu identificador de repartidor.");
-                if (chk) chk.checked = true;
-                sincronizarSwitchDisponibilidad();
-                return;
-            }
-            
-            const tienePendientes = await tienePedidosActivosOMensajesPendientes(idRepa);
-            if (tienePendientes) {
-                alert("⚠️ No puedes ponerte INACTIVO porque tienes envíos activos o pendientes por entregar.");
-                if (chk) chk.checked = true;
-                sincronizarSwitchDisponibilidad();
-                return;
-            }
+    function iniciarListenerEstadoRepartidor() {
+        if (unsubscribeEstadoRepartidor) {
+            unsubscribeEstadoRepartidor();
+            unsubscribeEstadoRepartidor = null;
         }
+
+        if (!repartidorLogueado || !repartidorLogueado.id) return;
+
+        getFirestoreDbAsync().then(db => {
+            if (db && window.firebaseFirestore && window.firebaseFirestore.onSnapshot) {
+                const docRef = window.firebaseFirestore.doc(db.db, "REPARTIDORES", repartidorLogueado.id);
+                unsubscribeEstadoRepartidor = window.firebaseFirestore.onSnapshot(docRef, (docSnap) => {
+                    if (docSnap && docSnap.exists()) {
+                        const data = docSnap.data();
+                        const estado = data.REPA_ESTADO || 'DISPONIBLE';
+                        console.log(`📡 [Real-time] REPA_ESTADO recibido de Firestore: ${estado}`);
+                        aplicarEstadoRepartidorEnUI(estado);
+                    }
+                }, (error) => {
+                    console.warn("Aviso en listener de estado repartidor:", error);
+                });
+            }
+        }).catch(err => {
+            console.warn("No se pudo iniciar listener de estado:", err);
+        });
+    }
+
+    async function toggleDisponibilidadRepartidor(isChecked) {
+        if (!repartidorLogueado || !repartidorLogueado.id) return;
         
-        // Proceder a guardar el estado
-        const nuevoEstado = isChecked ? "DISPONIBLE" : "INACTIVO";
         try {
             const db = await getFirestoreDbAsync();
-            if (db) {
-                const docRef = window.firebaseFirestore.doc(db.db, "REPARTIDORES", repartidorLogueado.id);
-                await window.firebaseFirestore.updateDoc(docRef, {
-                    REPA_ESTADO: nuevoEstado
-                });
-                console.log(`✅ REPA_ESTADO cambiado manualmente a ${nuevoEstado} para ${repartidorLogueado.id}`);
-                
-                // Actualizar UI
-                if (indicator) {
-                    indicator.style.color = isChecked ? '#2ecc71' : '#e74c3c';
+            if (!db) return;
+            const docRef = window.firebaseFirestore.doc(db.db, "REPARTIDORES", repartidorLogueado.id);
+            const docSnap = await window.firebaseFirestore.getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                alert("⚠️ Error: No se encontró el registro del repartidor en la base de datos.");
+                await sincronizarSwitchDisponibilidad();
+                return;
+            }
+
+            const data = docSnap.data();
+            const estadoActual = String(data.REPA_ESTADO || 'DISPONIBLE').toUpperCase().trim();
+
+            // CASO 1: El repartidor desea ponerse INACTIVO (isChecked === false)
+            if (!isChecked) {
+                // Solo se permite cambiar a INACTIVO si actualmente su estado en Firestore es DISPONIBLE
+                if (estadoActual !== "DISPONIBLE") {
+                    const { texto } = formatearEstadoRepartidorUI(estadoActual);
+                    alert(`⚠️ No puedes ponerte Inactivo mientras tu estado en el sistema sea "${texto.toUpperCase()}". Solo puedes cambiar a Inactivo cuando estés Disponible sin envíos o rutas activas.`);
+                    // Revertir switch sin alterar la base de datos
+                    await sincronizarSwitchDisponibilidad();
+                    return;
                 }
-                if (txt) {
-                    txt.innerHTML = `<i class="fas fa-circle" id="indicatorEstadoRepartidor" style="color: ${isChecked ? '#2ecc71' : '#e74c3c'}; font-size: 10px;"></i> ${isChecked ? 'Disponible' : 'Inactivo'}`;
+
+                // Guardar INACTIVO en Firestore
+                await window.firebaseFirestore.updateDoc(docRef, {
+                    REPA_ESTADO: "INACTIVO"
+                });
+                console.log(`✅ REPA_ESTADO cambiado a INACTIVO para ${repartidorLogueado.id}`);
+                aplicarEstadoRepartidorEnUI("INACTIVO");
+            } 
+            // CASO 2: El repartidor desea ponerse DISPONIBLE (isChecked === true)
+            else {
+                // Solo se permite cambiar a DISPONIBLE si actualmente su estado en Firestore es INACTIVO
+                if (estadoActual === "INACTIVO") {
+                    await window.firebaseFirestore.updateDoc(docRef, {
+                        REPA_ESTADO: "DISPONIBLE"
+                    });
+                    console.log(`✅ REPA_ESTADO cambiado a DISPONIBLE para ${repartidorLogueado.id}`);
+                    aplicarEstadoRepartidorEnUI("DISPONIBLE");
+                } else {
+                    // Si ya estaba en cualquier otro estado activo (CON ENVIO, EN RUTA, etc.), se mantiene intacto en la BD
+                    console.log(`ℹ️ El estado actual en BD es ${estadoActual}, se mantiene intacto.`);
+                    await sincronizarSwitchDisponibilidad();
                 }
             }
         } catch (error) {
-            console.error("❌ Error actualizando REPA_ESTADO manualmente:", error);
-            alert("❌ Error al guardar tu estado en la base de datos.");
-            if (chk) chk.checked = !isChecked; // Revertir
-            sincronizarSwitchDisponibilidad();
+            console.error("❌ Error al procesar cambio de disponibilidad:", error);
+            alert("❌ Error al comunicar con la base de datos.");
+            await sincronizarSwitchDisponibilidad();
         }
     }
 
@@ -1875,7 +1962,7 @@
                     REPA_ESTADO: nuevoEstado
                 });
                 console.log(`✅ REPA_ESTADO cambiado a ${nuevoEstado} para ${repartidorLogueado.id}`);
-                await sincronizarSwitchDisponibilidad();
+                aplicarEstadoRepartidorEnUI(nuevoEstado);
             }
         } catch (error) {
             console.error(`❌ Error actualizando REPA_ESTADO a ${nuevoEstado}:`, error);
